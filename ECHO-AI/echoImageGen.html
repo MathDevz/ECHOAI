@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ECHO ImageGen</title>
+    <link rel="icon" type="image/x-icon" href="https://github.com/MathDevz/chatapp/blob/main/Echo.png?raw=true">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            color: white;
+            font-family: Arial, sans-serif;
+            position: relative;
+            height: 100vh;
+            background-color: black;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding-top: 60px;
+            /* Space for navbar */
+        }
+
+        /* Enhanced navigation bar styles */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            transition: background 0.3s ease-in-out;
+        }
+
+        .navbar a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            font-size: 18px;
+            padding: 10px 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+        }
+
+        .navbar a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ddd;
+        }
+
+        #particles-js {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: #000000;
+            z-index: -1;
+            /* Behind other content */
+        }
+
+        #content {
+            position: relative;
+            z-index: 1;
+            /* On top of the particles background */
+            text-align: center;
+        }
+
+        #header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            /* Space between text and image */
+            margin-bottom: 20px;
+            /* Space below the header */
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2rem;
+            /* Adjust as needed */
+        }
+
+        #header img {
+            height: 40px;
+            /* Adjust size as needed */
+            width: auto;
+            /* Maintain aspect ratio */
+        }
+
+        input[type="text"],
+        button,
+        select {
+            padding: 10px;
+            margin: 5px;
+            font-size: 16px;
+            background-color: #181818;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+        }
+
+        input[type="text"]:focus,
+        button:hover,
+        select:hover {
+            background-color: #000;
+            transform: scale(1.05);
+        }
+
+        #status {
+            margin-top: 10px;
+            font-weight: bold;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        #result {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        #image {
+            max-width: 100%;
+            height: auto;
+            display: block;
+            transition: opacity 0.5s ease-in-out;
+            /* Smooth fade-in */
+        }
+
+        #image.loaded {
+            opacity: 1;
+        }
+
+        #image:not(.loaded) {
+            opacity: 0;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes fadeInMessage {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <a href="index.html">Home</a>
+        <a href="echoai.html">ECHO AI</a>
+        <a href="echoImageGen.html">ECHO ImageGen</a>
+        <a href="echochat.html">ECHO Chat</a>
+        <a href="AboutEcho.html">About</a>
+    </div>
+
+    <div id="particles-js"></div>
+    <div id="content">
+        <div id="header">
+            <h1>ECHO ImageGen</h1>
+            <img src="https://github.com/MathDevz/chatapp/blob/main/Echo.png?raw=true" alt="Echo AI Logo">
+        </div>
+        <input type="text" id="promptInput" placeholder="Enter image description" />
+        <select id="modelSelect">
+            <option value="anything-v5">DrawingModel-v5</option>
+            <option value="dreamlike-v1">Dream-like-v1</option>
+            <option value="realisticvs-v20">RealisticVS-v20</option>
+        </select>
+        <button id="generateBtn">Generate Image</button>
+        <div id="status"></div>
+        <div id="result">
+            <img id="image" alt="Generated Image" />
+        </div>
+    </div>
+
+    <!-- Include particles.js library -->
+    <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+    <script>
+        // Configure particles.js
+        particlesJS("particles-js", {
+            "particles": {
+                "number": {
+                    "value": 100,
+                    "density": {
+                        "enable": true,
+                        "value_area": 800
+                    }
+                },
+                "color": {
+                    "value": "#ffffff"
+                },
+                "shape": {
+                    "type": "circle",
+                    "stroke": {
+                        "width": 0,
+                        "color": "#000000"
+                    },
+                    "polygon": {
+                        "nb_sides": 5
+                    },
+                    "image": {
+                        "src": "img/github.svg",
+                        "width": 100,
+                        "height": 100
+                    }
+                },
+                "opacity": {
+                    "value": 0.5,
+                    "random": false,
+                    "anim": {
+                        "enable": false,
+                        "speed": 1,
+                        "opacity_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "size": {
+                    "value": 3,
+                    "random": true,
+                    "anim": {
+                        "enable": false,
+                        "speed": 40,
+                        "size_min": 0.1,
+                        "sync": false
+                    }
+                },
+                "line_linked": {
+                    "enable": true,
+                    "distance": 150,
+                    "color": "#ffffff",
+                    "opacity": 0.4,
+                    "width": 1
+                },
+                "move": {
+                    "enable": true,
+                    "speed": 6,
+                    "direction": "none",
+                    "random": false,
+                    "straight": false,
+                    "out_mode": "out",
+                    "bounce": false,
+                    "attract": {
+                        "enable": false,
+                        "rotateX": 600,
+                        "rotateY": 1200
+                    }
+                }
+            },
+            "interactivity": {
+                "detect_on": "canvas",
+                "events": {
+                    "onhover": {
+                        "enable": true,
+                        "mode": "repulse"
+                    },
+                    "onclick": {
+                        "enable": true,
+                        "mode": "push"
+                    },
+                    "resize": true
+                },
+                "modes": {
+                    "grab": {
+                        "distance": 400,
+                        "line_linked": {
+                            "opacity": 1
+                        }
+                    },
+                    "bubble": {
+                        "distance": 400,
+                        "size": 40,
+                        "duration": 2,
+                        "opacity": 8,
+                        "speed": 3
+                    },
+                    "repulse": {
+                        "distance": 200
+                    },
+                    "push": {
+                        "particles_nb": 4
+                    },
+                    "remove": {
+                        "particles_nb": 2
+                    }
+                }
+            },
+            "retina_detect": true
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('generateBtn').addEventListener('click', () => {
+                const prompt = document.getElementById('promptInput').value.trim();
+                const selectedModel = document.getElementById('modelSelect').value;
+
+                if (!prompt) {
+                    alert('Please enter a description for the image.');
+                    return;
+                }
+
+                document.getElementById('status').textContent = 'Loading...';
+                document.getElementById('image').classList.remove('loaded');
+
+                let apiUrl;
+                let options;
+
+                if (selectedModel === 'anything-v5') {
+                    apiUrl = 'https://api.shuttleai.app/v1/images/generations';
+                    options = {
+                        method: 'POST',
+                        headers: {
+                            Authorization: 'Bearer shuttle-a4257272b41c3b8b334f',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ model: 'anything-v5', prompt })
+                    };
+                } else if (selectedModel === 'dreamlike-v1') {
+                    apiUrl = 'https://api.shuttleai.app/v1/images/generations';
+                    options = {
+                        method: 'POST',
+                        headers: {
+                            Authorization: 'Bearer shuttle-a4257272b41c3b8b334f',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ model: 'dreamlike-v1', prompt })
+                    };
+                } else if (selectedModel === 'realisticvs-v20') {
+                    apiUrl = 'https://api.shuttleai.app/v1/images/generations';
+                    options = {
+                        method: 'POST',
+                        headers: {
+                            Authorization: 'Bearer shuttle-a4257272b41c3b8b334f',
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ model: 'realisticvs-v20', prompt })
+                    };
+                }
+
+                fetch(apiUrl, options)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data && data.data && data.data.length > 0) {
+                            const imageUrl = data.data[0].url;
+                            const imgElement = document.getElementById('image');
+                            imgElement.src = imageUrl;
+                            imgElement.onload = () => {
+                                imgElement.classList.add('loaded');
+                            };
+                            document.getElementById('status').textContent = 'Image generated successfully!';
+                        } else {
+                            document.getElementById('status').textContent = 'Failed to generate image. Please try again.';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        document.getElementById('status').textContent = 'An error occurred. Please try again.';
+                    });
+            });
+        });
+    </script>
+</body>
+
+</html>
